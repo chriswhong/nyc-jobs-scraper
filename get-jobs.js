@@ -30,19 +30,48 @@ const parseJobHTML = (html) => {
   }
 };
 
-// pass in a page from puppeteer, it will return an array of parsed job data
-const scrapeJobs = async (page) => {
-  const jobs = await page.evaluate(() => {
+// scrapes the page, returns an object with scraped data and
+// a boolean indicating whether there is another page of info
+const processPage = async (page) => {
+  const jobsHTMLArray = await page.evaluate(() => {
     const trs = Array.from(document.querySelectorAll('.PSLEVEL1GRIDNBO tr'));
     return trs.map(d => d.innerHTML);
   });
 
-  return jobs.map(parseJobHTML);
+  const hasNextPage = await page.evaluate(() => {
+    const [ nextPage ] = document.getElementsByClassName('PTNEXTROW1');
+    return !!nextPage;
+  });
+
+  const data = jobsHTMLArray.map(parseJobHTML);
+
+  return {
+    data,
+    hasNextPage,
+  };
+}
+
+// recursive function, concatenates several pages of scraped data into one array
+const scrapeJobs = async (page) => {
+  const { data, hasNextPage } = await processPage(page);
+
+  if (hasNextPage) {
+    // click the next button
+    await page.evaluate(() => {
+      document.getElementsByClassName('PTNEXTROW1')[0].click();
+    });
+    await page.waitFor(500);
+
+    const nextPageData = await scrapeJobs(page);
+    return [...data, ...nextPageData];
+  } else {
+    return data;
+  }
 };
 
 const getJobs = async (agencyCode) => {
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
   });
   const page = await browser.newPage();
 
@@ -56,32 +85,9 @@ const getJobs = async (agencyCode) => {
   await page.goto(URL1, { waitUntil : 'networkidle2' });
   await page.goto(URL2, { waitUntil : 'networkidle2' });
 
-  // scrape the jobs!
-  let jobData = await scrapeJobs(page);
+  let jobsData = await scrapeJobs(page);
 
-  // go to the next page
-  // TODO check how many pages of results there are and iterate accordingly
-  const hasNextPage = await page.evaluate(() => {
-    let [ nextPage ] = document.getElementsByClassName('PTNEXTROW1');
-    if (nextPage) {
-      nextPage.click();
-      return true;
-    }
-    return false;
-  });
-
-  if (hasNextPage) {
-    await page.waitFor(500);
-
-    const page2Jobs = await scrapeJobs(page)
-
-    jobData = [...jobData, ...page2Jobs];
-  }
-
-
-  browser.close();
-
-  return jobData;
+  return jobsData;
 }
 
 module.exports = getJobs;

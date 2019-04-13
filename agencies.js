@@ -78,10 +78,13 @@ const agencyCodes = [
 ];
 
 
-(async () => {
+const getAgencyData = async () => {
   for (const agencyCode of agencyCodes) {
     console.log(`Fetching jobs for ${agencyCode}`);
     const jobs = await getJobs(agencyCode);
     console.log(jobs);
   }
-})()
+  process.exit();
+}
+
+getAgencyData();
