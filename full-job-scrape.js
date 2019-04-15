@@ -1,8 +1,31 @@
+const fs = require('fs-extra');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
 const { allAgencyJobIds } = require('./tmp/partial.json');
 const { processCategories } = require('./util/process-categories');
+
+// set up output csv
+const outputPath = 'tmp/output.csv';
+fs.openSync(outputPath, 'w');
+let firstWrite = true;
+
+const writeToCSV = async (data) => {
+  // if firstWrite, write the headers
+  if (firstWrite) {
+    fs.appendFileSync(outputPath, `${Object.keys(data).join(',')}\n`);
+    firstWrite = false;
+  }
+
+  const csvRow = Object.keys(data)
+    .map(key => {
+      if ((key === 'jobCategories') || (key === 'content')) return `"${data[key].join(';')}"`
+      return `"${data[key]}"`;
+    })
+    .join(',');
+
+  fs.appendFileSync(outputPath, `${csvRow}\n`);
+}
 
 const parseContent = (content) => {
   const $ = cheerio.load(content);
@@ -15,10 +38,7 @@ const parseContent = (content) => {
   }).get()
 
   return headers.map((header, i) => {
-    return {
-      header,
-      content: bodies[i],
-    }
+    return `<h3>${header}</h3><p>${bodies[i]}</p>`;
   });
 };
 
@@ -77,6 +97,7 @@ const scrapeJob = async (page) => {
 }
 
 const run = async () => {
+
   const browser = await puppeteer.launch({
     headless: true,
   });
@@ -88,7 +109,7 @@ const run = async () => {
       await page.goto(URL, { waitUntil : 'networkidle2' });
       const data = await scrapeJob(page);
       await page.waitFor(1000);
-      console.log(data);
+      writeToCSV(data);
     }
   }
   process.exit();
