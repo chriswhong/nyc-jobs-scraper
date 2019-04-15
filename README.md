@@ -10,3 +10,7 @@ I'd like to add express.js, and have the script save a static JSON file in the `
 First, we need a complete list of all job id numbers.  `agencies.js` iterates over all agency codes and scrapes the job listings, exporting an array ids for each agency.  This takes about 7 minutes to crawl all 73 agency codes.
 
 Next, we must scrape all jobs
+
+## put file to DO spaces with s3cmd
+
+`s3cmd put 20190415.csv s3://nyc-jobs`
