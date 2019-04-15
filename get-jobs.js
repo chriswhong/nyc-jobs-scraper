@@ -8,7 +8,7 @@ const parseJobHTML = (html) => {
 
   // get job title and id line
   const titleId = $('a.PSHYPERLINK').text()
-  const [ title, id ] = titleId.split('-').map(d => d.trim());
+  const [ title, id ] = titleId.split(/-\s(\d{6})/).map(d => d.trim());
 
   // get job attributes line
   const jobAttributes = $('[id^=JOBATTRIBUTES]').text();
@@ -20,14 +20,7 @@ const parseJobHTML = (html) => {
   agency = agency.split('Agency: ')[1].trim();
   postedDate = postedDate.split('Posted Date: ')[1].trim();
 
-  return {
-    title,
-    id,
-    department,
-    location,
-    agency,
-    postedDate,
-  }
+  return id;
 };
 
 // scrapes the page, returns an object with scraped data and
@@ -69,6 +62,7 @@ const scrapeJobs = async (page) => {
   }
 };
 
+// returns an object with agencyCode, agencyName, and an array of jobIds
 const getJobs = async (agencyCode) => {
   const browser = await puppeteer.launch({
     headless: true,
@@ -85,9 +79,13 @@ const getJobs = async (agencyCode) => {
   await page.goto(URL1, { waitUntil : 'networkidle2' });
   await page.goto(URL2, { waitUntil : 'networkidle2' });
 
-  let jobsData = await scrapeJobs(page);
+  let jobIds = await scrapeJobs(page);
+  console.log(jobIds);
 
-  return jobsData;
+  return {
+    agencyCode,
+    jobIds,
+  };
 }
 
 module.exports = getJobs;
