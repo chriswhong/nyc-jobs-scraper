@@ -2,12 +2,11 @@ const fs = require('fs-extra');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
-const { allAgencyJobIds } = require('./tmp/agency-job-ids.json');
-// const { allAgencyJobIds } = require('./tmp/partial.json');
 const { processCategories } = require('./util/process-categories');
 
 // set up output csv
-const outputPath = 'tmp/output.csv';
+const timestamp = Date.now();
+const outputPath = `tmp/${timestamp}.csv`;
 fs.openSync(outputPath, 'w');
 let firstWrite = true;
 
@@ -98,29 +97,33 @@ const scrapeJob = async (page) => {
   };
 }
 
-const run = async () => {
+const scrapeJobData = async (agencyJobIds) => {
 
   const browser = await puppeteer.launch({
     headless: true,
   });
   const page = await browser.newPage();
 
-  for (const agency of allAgencyJobIds) {
+  // give a little message about how much scraping we are about to do
+  const count = agencyJobIds.reduce((acc, cur) => cur.jobIds.length + acc, 0);
+  console.log(`Scraping ${count} jobs`);
+
+  for (const agency of agencyJobIds) {
     for (const jobId of agency.jobIds) {
       console.log(`Fetching data for job ${jobId}...`)
       try {
         const URL = `https://a127-jobs.nyc.gov/psc/nycjobs/EMPLOYEE/HRMS/c/HRS_HRAM.HRS_APP_SCHJOB.GBL?Page=HRS_APP_JBPST&Action=U&FOCUS=Applicant&SiteId=1&JobOpeningId=${jobId}&PostingSeq=1`
         await page.goto(URL, { waitUntil : 'networkidle2' });
         const data = await scrapeJob(page);
-        await page.waitFor(500);
+        await page.waitFor(100);
         writeToCSV(data);
       } catch(e) {
         console.log(`Oops, something went wrong with job ${jobId}`, e)
       }
-
     }
   }
-  process.exit();
+
+  return `tmp/${timestamp}.csv`;
 }
 
-run();
+module.exports = scrapeJobData;

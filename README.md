@@ -1,16 +1,18 @@
 # nyc-jobs-proxy
-Scrapes current NYC government jobs from a127-jobs.nyc.gov using puppeteer and cheerio
+Scrapes current NYC government jobs from a127-jobs.nyc.gov using puppeteer and cheerio, outputs to CSV
 
-It's just a node script that you can run locally.  `npm install` to install dependencies, then run `npm script.js`.
-
-I'd like to add express.js, and have the script save a static JSON file in the `/public` directory.  The script can be set to run once an hour or whatever and overwrite the JSON.
+It's just a node script that you can run locally.  `npm install` to install dependencies, then run `npm start`.
 
 ## Methodology
 
-First, we need a complete list of all job id numbers.  `agencies.js` iterates over all agency codes and scrapes the job listings, exporting an array ids for each agency.  This takes about 7 minutes to crawl all 73 agency codes.
+`npm start` kicks off the following process:
 
-Next, we must scrape all jobs
+1 - Iterates over each agency page and pulls job ids.  These are saved in `tmp/agency-job-ids.json`.
 
-## put file to DO spaces with s3cmd
+2 - Iterates over each job id, appending csv rows to `tmp/{timestamp}.csv`
 
-`s3cmd put 20190415.csv s3://nyc-jobs`
+3 - PUTs the finished CSV to DigitalOcean Spaces (S3 Clone)
+
+## Environment Variables
+
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set for the script to push a csv to S3/DOSpaces
