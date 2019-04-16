@@ -16,6 +16,7 @@ const pushToSpaces = async (filePath) => {
         Body: data,
         Bucket: 'nyc-jobs',
         Key: filePath.split('/')[1],
+        ContentType: 'text/csv',
     }).promise();
     console.log(result);
   } catch(e) {
