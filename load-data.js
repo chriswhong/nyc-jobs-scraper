@@ -10,7 +10,7 @@ const { processCategories } = require('./util/process-categories');
 
 require('dotenv').config();
 
-const timestamp = 1555383702964;
+const timestamp = 1555389346773;
 
 const dataURL = `https://nyc-jobs.sfo2.digitaloceanspaces.com/${timestamp}.csv`;
 const dataUpdatedAt = moment(timestamp).format();
@@ -24,6 +24,7 @@ const dataUpdatedAt = moment(timestamp).format();
 
   // add clean agencyId to each record
   const jobsWithAgencyData = jsonArray.map((job) => {
+    console.log(job)
     const { agency, jobCategories } = job;
 
     const { displayName, acronym } = agencyLookup(agency);
@@ -45,8 +46,7 @@ const dataUpdatedAt = moment(timestamp).format();
     return job;
   });
 
-
-  console.log(jobsWithAgencyData[0], dataUpdatedAt);
+  console.log(jobsWithAgencyData.length)
 
   // make a connection
   mongoose.connect(process.env.MONGO_URI);
@@ -67,7 +67,7 @@ const dataUpdatedAt = moment(timestamp).format();
       console.log('Deleted all documents in Collection');
 
       // save multiple documents to the collection referenced by Job Model
-      Job.collection.insertMany(jobsWithAgencyData, (err, docs) => {
+      Job.collection.insertMany(jobsWithAgencyData, { ordered: false }, (err, docs) => {
         if (err) {
           return console.error(err);
         }

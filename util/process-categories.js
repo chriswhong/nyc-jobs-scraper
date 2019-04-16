@@ -84,9 +84,17 @@ const processCategories = (categoryString) => {
   return matches.map(d => d.id);
 };
 
+const findCategoryIds = (categoryString) => {
+  // loop over categories, if exists in categoryString, push to array
+  const matches = categories.filter(d => categoryString.includes(d.displayName));
+
+  return matches.map(d => d.id);
+};
+
 const LookupCategoryDisplayName = id => categories.filter(d => d.id === id)[0].displayName;
 
 module.exports = {
   processCategories,
+  findCategoryIds,
   LookupCategoryDisplayName,
 };

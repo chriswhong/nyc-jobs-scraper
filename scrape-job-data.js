@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
-const { processCategories } = require('./util/process-categories');
+const { findCategoryIds } = require('./util/process-categories');
 
 // set up output csv
 const timestamp = Date.now();
@@ -73,8 +73,9 @@ const scrapeJob = async (page) => {
     return jobData;
   });
 
+
   // special handling for jobCategories
-  data.jobCategories = processCategories(data.jobCategories);
+  data.jobCategories = findCategoryIds(data.jobCategories);
 
   // special handling for proposedSalaryRange
   const [low, high] = data.proposedSalaryRange
