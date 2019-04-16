@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 
 // define Schema
 module.exports = mongoose.Schema({
-  'jobId': String,
+  'jobId': {
+    type: 'String',
+    unique: true,
+  },
   'agency': String,
   'businessTitle': String,
   'civilServiceTitle': String,
@@ -14,7 +17,7 @@ module.exports = mongoose.Schema({
   'numberOfPositions': String,
   'titleCodeNumber': String,
   'level': String,
-  'postingDate': String,
+  'postingDate': Date,
   'content': String,
   'salaryLow': String,
   'salaryHigh': String,

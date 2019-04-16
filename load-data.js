@@ -22,7 +22,7 @@ const dataUpdatedAt = moment(timestamp).format();
 
   const jsonArray= await csv().fromString(csvString);
 
-  // add clean agency_id to each record
+  // add clean agencyId to each record
   const jobsWithAgencyData = jsonArray.map((job) => {
     const { agency, jobCategories } = job;
 
@@ -30,6 +30,9 @@ const dataUpdatedAt = moment(timestamp).format();
     job.agencyId = slugify(displayName, { remove: /[*+~.()'"!:@,]/g }).toLowerCase();
     job.agency = displayName;
     if (acronym) job.agency_acronym = acronym;
+
+    // turn the dates into ISO dates
+    job.postingDate = moment(job.postingDate).format();
 
     // convert job_categories to array
     // add clean category slug to each record
@@ -44,7 +47,7 @@ const dataUpdatedAt = moment(timestamp).format();
 
 
   console.log(jobsWithAgencyData[0], dataUpdatedAt);
-  
+
   // make a connection
   mongoose.connect(process.env.MONGO_URI);
 
