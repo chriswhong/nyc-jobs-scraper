@@ -79,7 +79,7 @@ const categories = [
 
 const processCategories = (categoryString) => {
   // loop over categories, if exists in categoryString, push to array
-  const matches = categories.filter(d => categoryString.includes(d.displayName));
+  const matches = categories.filter(d => categoryString.includes(d.id));
 
   return matches.map(d => d.id);
 };

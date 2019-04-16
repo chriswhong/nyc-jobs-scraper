@@ -19,7 +19,9 @@ const writeToCSV = async (data) => {
 
   const csvRow = Object.keys(data)
     .map(key => {
-      if ((key === 'jobCategories') || (key === 'content')) return `"${data[key].join(';')}"`
+      if (key === 'jobCategories') return `"${data[key].join(';')}"`
+      if (key === 'content') return `"${data[key].join(' ')}"`
+
       return `"${data[key]}"`;
     })
     .join(',');
