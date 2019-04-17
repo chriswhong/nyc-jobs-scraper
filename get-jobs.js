@@ -66,6 +66,7 @@ const scrapeJobs = async (page) => {
 const getJobs = async (agencyCode) => {
   const browser = await puppeteer.launch({
     headless: true,
+    args: ['--no-sandbox'],
   });
   const page = await browser.newPage();
 
@@ -81,6 +82,7 @@ const getJobs = async (agencyCode) => {
 
   let jobIds = await scrapeJobs(page);
   console.log(jobIds);
+  browser.close();
 
   return {
     agencyCode,
