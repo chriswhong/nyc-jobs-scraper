@@ -10,7 +10,7 @@ const { processCategories } = require('./util/process-categories');
 
 require('dotenv').config();
 
-const timestamp = 1555389346773;
+const timestamp = parseInt(process.argv[2]);
 
 const dataURL = `https://nyc-jobs.sfo2.digitaloceanspaces.com/${timestamp}.csv`;
 const dataUpdatedAt = moment(timestamp).format();
