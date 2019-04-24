@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
-const { findCategoryIds } = require('./util/process-categories');
+const { findCategoryIds } = require('../util/process-categories');
 
 // set up output csv
 const timestamp = Date.now();
@@ -18,30 +18,28 @@ const writeToCSV = async (data) => {
   }
 
   const csvRow = Object.keys(data)
-    .map(key => {
-      if (key === 'jobCategories') return `"${data[key].join(';')}"`
-      if (key === 'content') return `"${data[key].join(' ')}"`
+    .map((key) => {
+      if (key === 'jobCategories') return `"${data[key].join(';')}"`;
+      if (key === 'content') return `"${data[key].join(' ')}"`;
 
       return `"${data[key]}"`;
     })
     .join(',');
 
   fs.appendFileSync(outputPath, `${csvRow}\n`);
-}
+};
 
 const parseContent = (content) => {
   const $ = cheerio.load(content);
-  const headers = $('[id^=HRS_SCH_PSTDSC_DESCR\\$]').map(function() {
-    return $(this).text();
-  }).get()
+  const headers = $('[id^=HRS_SCH_PSTDSC_DESCR\\$]')
+    .map(() => $(this).text())
+    .get();
 
-  const bodies = $('[id^=HRS_SCH_PSTDSC_DESCRLONG\\$]').map(function() {
-    return $(this).html();
-  }).get()
+  const bodies = $('[id^=HRS_SCH_PSTDSC_DESCRLONG\\$]')
+    .map(() => $(this).html())
+    .get();
 
-  return headers.map((header, i) => {
-    return `<h3>${header}</h3><p>${bodies[i]}</p>`;
-  });
+  return headers.map((header, i) => `<h3>${header}</h3><p>${bodies[i]}</p>`);
 };
 
 const scrapeJob = async (page) => {
@@ -61,7 +59,7 @@ const scrapeJob = async (page) => {
       level: 'NYC_DRVD_EHIRE_NYC_TITLE_ASG_LV',
       proposedSalaryRange: 'NYC_DRVD_EHIRE_DESCR50',
       postingDate: 'NYC_DRVD_EHIRE_HRS_JO_PST_OPN_DT',
-    }
+    };
 
     const jobData = {};
     Object.keys(idsToScrape).forEach((key) => {
@@ -81,13 +79,13 @@ const scrapeJob = async (page) => {
   const [low, high] = data.proposedSalaryRange
     .match(/(^.*)\(/)[1]
     .split('-')
-    .map((d) => d.split('$')[1].trim());
+    .map(d => d.split('$')[1].trim());
 
   const salaryData = {
     salaryLow: low,
     salaryHigh: high,
     salaryType: data.proposedSalaryRange.match(/\((\w+)\)/)[1],
-  }
+  };
 
   // parse content
   data.content = parseContent(data.content);
@@ -98,10 +96,9 @@ const scrapeJob = async (page) => {
     ...data,
     ...salaryData,
   };
-}
+};
 
 const scrapeJobData = async (agencyJobIds) => {
-
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox'],
@@ -114,20 +111,20 @@ const scrapeJobData = async (agencyJobIds) => {
 
   for (const agency of agencyJobIds) {
     for (const jobId of agency.jobIds) {
-      console.log(`Fetching data for job ${jobId}...`)
+      console.log(`Fetching data for job ${jobId}...`);
       try {
-        const URL = `https://a127-jobs.nyc.gov/psc/nycjobs/EMPLOYEE/HRMS/c/HRS_HRAM.HRS_APP_SCHJOB.GBL?Page=HRS_APP_JBPST&Action=U&FOCUS=Applicant&SiteId=1&JobOpeningId=${jobId}&PostingSeq=1`
-        await page.goto(URL, { waitUntil : 'networkidle2' });
+        const URL = `https://a127-jobs.nyc.gov/psc/nycjobs/EMPLOYEE/HRMS/c/HRS_HRAM.HRS_APP_SCHJOB.GBL?Page=HRS_APP_JBPST&Action=U&FOCUS=Applicant&SiteId=1&JobOpeningId=${jobId}&PostingSeq=1`;
+        await page.goto(URL, { waitUntil: 'networkidle2' });
         const data = await scrapeJob(page);
         await page.waitFor(100);
         writeToCSV(data);
-      } catch(e) {
-        console.log(`Oops, something went wrong with job ${jobId}`, e)
+      } catch (e) {
+        console.log(`Oops, something went wrong with job ${jobId}`, e);
       }
     }
   }
 
   return `tmp/${timestamp}.csv`;
-}
+};
 
 module.exports = scrapeJobData;

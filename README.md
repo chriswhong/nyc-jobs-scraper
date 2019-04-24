@@ -1,9 +1,10 @@
 # nyc-jobs-proxy
 Scrapes current NYC government jobs from a127-jobs.nyc.gov using puppeteer and cheerio, outputs to CSV
 
-It's just a node script that you can run locally.  `npm install` to install dependencies, then run `npm start`.
+## How to Use
+`npm install` to install dependencies, then run `npm start`.
 
-## Methodology
+## How it works
 
 `npm start` kicks off the following process:
 
@@ -13,6 +14,18 @@ It's just a node script that you can run locally.  `npm install` to install depe
 
 3 - PUTs the finished CSV to DigitalOcean Spaces (S3 Clone)
 
+4 - Notifies Slack with info about the file (rows, filesize)
+
+## Test Mode
+
+Run `TEST=true npm start` to run the whole workflow using only jobs from the first agency in `utils/agency-codes`, loading data into the database specified in `MONGO_URI_TEST`;
+
 ## Environment Variables
 
-`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set for the script to push a csv to S3/DOSpaces
+Create a `.env` with the following when running locally:Â
+
+- `AWS_ACCESS_KEY_ID` - S3/DO Spaces Access Key ID
+- `AWS_SECRET_ACCESS_KEY` - S3/DO Spaces Secret Access Key
+- `MONGO_URI` - Mongodb connection string
+- `MONGO_URI_TEST` - Mongodb connection string for test mode
+- `SLACK_WEBHOOK_URL` - Webhook URL for slack notifications

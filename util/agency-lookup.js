@@ -274,8 +274,23 @@ const agencies = [
     id: 'MUNICIPAL WATER FIN AUTHORITY',
     displayName: 'Municipal Water Finance Authority',
   },
+  {
+    id: 'CULTURAL AFFAIRS',
+    displayName: 'Department of Cultural Affairs',
+  }
 ];
 
-const agencyLookup = id => agencies.find(agency => agency.id === id);
+const agencyLookup = id => {
+  const match = agencies.find(agency => agency.id === id);
+
+  if (match) {
+    return match;
+  } else {
+    return {
+      id,
+      displayName: id,
+    }
+  }
+}
 
 module.exports = agencyLookup;

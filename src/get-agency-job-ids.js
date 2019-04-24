@@ -1,10 +1,9 @@
-const fs = require('fs-extra');
 const getJobs = require('./get-jobs');
-let agencyCodes = require('./util/agency-codes');
+let agencyCodes = require('../util/agency-codes');
 
-if (process.env.DEBUG) agencyCodes = agencyCodes.slice(0, 1);
+if (process.env.TEST) agencyCodes = agencyCodes.slice(0, 1);
 
-let allAgencyJobIds = [];
+const allAgencyJobIds = [];
 
 const getAgencyJobIds = async () => {
   for (const agencyCode of agencyCodes) {
@@ -12,12 +11,12 @@ const getAgencyJobIds = async () => {
     try {
       const agencyJobIds = await getJobs(agencyCode);
       allAgencyJobIds.push(agencyJobIds);
-    } catch(e) {
+    } catch (e) {
       console.log(`Oops, something went wrong getting jobIds for agency ${agencyCode}`, e);
     }
   }
 
   return allAgencyJobIds;
-}
+};
 
 module.exports = getAgencyJobIds;
