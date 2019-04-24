@@ -7,6 +7,7 @@ const { findCategoryIds } = require('../util/process-categories');
 // set up output csv
 const timestamp = Date.now();
 const outputPath = `tmp/${timestamp}.csv`;
+fs.ensureFileSync(outputPath);
 fs.openSync(outputPath, 'w');
 let firstWrite = true;
 
