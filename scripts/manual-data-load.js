@@ -1,4 +1,5 @@
 // loads a single csv into the database
+require('dotenv').config()
 
 const loadData = require('../src/load-data');
 
